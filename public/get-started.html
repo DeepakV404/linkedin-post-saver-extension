@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Inter" rel="stylesheet">
+    <title>Getting Started</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #F0F1F3;
+            overflow: hidden;
+        }
+        .gs-navbar {
+            height: 45px;
+            background-color: #161A30;
+            padding: 6px 15px;
+            display: flex;
+            align-items: center;
+        }
+        .gs-content-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 45px); 
+            text-align: center;
+        }
+        .gs-content img {
+            max-width: 320px;
+            height: auto;
+        }
+        .gs-block-content,.gs-cta {
+            margin-top: 35px;
+        }
+        h2 {
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1;
+            color: #000000D9;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.375;
+            color: rgba(0, 0, 0, 0.67);
+            margin: 0 auto;
+            max-width: 500px;
+        }
+        .gs-button {
+            padding: 8px 30px;
+            border-radius: 10px;
+            background-color: #F06422;
+            color: #FFF;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        @media screen and (max-width:480px) {
+            p {
+                max-width: 300px;
+            }
+            .gs-extension-screen{
+                width: 260px;
+            }
+            h2{
+                line-height: 1.2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gs-navbar">
+        <img src="https://static.buyerstage.io/static-assets/buyerstage-white-logo.svg" alt="Buyerstage Logo" width="150">
+    </div>
+    <div class="gs-content-wrapper">
+        <div class="gs-content">
+            <img class="gs-extension-screen" src="https://static.buyerstage.io/bs_extension/getting-started-asset-2.svg" alt="Getting Started">
+            <div class="gs-block-content">
+                <h2>Start Saving Your LinkedIn Posts Now</h2>
+                <p>Start saving your favorite posts and comments to see them here. Easily organize and access your saved content anytime.</p>
+            </div>
+            <div class="gs-cta">
+                <a href="https://www.linkedin.com/" class="gs-button">Go to LinkedIn</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

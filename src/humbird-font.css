@@ -1,0 +1,69 @@
+@font-face {
+    font-family: 'humbird-font';
+    src:  url('chrome-extension://__MSG_@@extension_id__/fonts/humbird/humbird-font.eot?ei8uj3');
+    src:  url('chrome-extension://__MSG_@@extension_id__/fonts/humbird/humbird-font.eot?ei8uj3#iefix') format('embedded-opentype'),
+      url('chrome-extension://__MSG_@@extension_id__/fonts/humbird/humbird-font.ttf?ei8uj3') format('truetype'),
+      url('chrome-extension://__MSG_@@extension_id__/fonts/humbird/humbird-font.woff?ei8uj3') format('woff'),
+      url('chrome-extension://__MSG_@@extension_id__/fonts/humbird/humbird-font.svg?ei8uj3#humbird-font') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+  }
+
+[class^="hf-"], [class*=" hf-"] {
+    font-family: 'humbird-font' !important;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.hf-add:before {
+    content: "\e96b";
+}
+.hf-check_circle:before {
+    content: "\ea87";
+}
+.hf-close:before {
+    content: "\ea9a";
+}
+.hf-done:before {
+    content: "\eb58";
+}
+.hf-expand_less:before {
+    content: "\ebb0";
+}
+.hf-expand_more:before {
+    content: "\ebb1";
+}
+.hf-horizontal_rule:before {
+    content: "\ecb1";
+}
+.hf-more_horiz:before {
+    content: "\edbc";
+}
+.hf-navigate_before:before {
+    content: "\edd9";
+}
+.hf-navigate_next:before {
+    content: "\edda";
+}
+.hf-not_interested:before {
+    content: "\ee0c";
+}
+
+.hf-bookmark:before {
+    content: "\e866";
+}
+
+.hf-open_in_new:before{
+    content: "\e89e";
+}
+
+.hf-content_copy:before{
+    content: "\e14d";
+}
