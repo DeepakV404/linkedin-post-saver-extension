@@ -9,14 +9,13 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { AppBroker } from '../query/AppBroker';
 import { Post } from '../helper/types';
 import AddCollectionModal from '../views/collections/add-collection-modal';
-import emailjs from '@emailjs/browser';
 
 const { TabPane }           =   Tabs;
 const { Text, Paragraph }   =   Typography;
 
 const OptionsLayout = () => {
 
-    const { userInfo, loading, $posts, $collections, deletePost, setCollections }   =   useContext(OptionsContext);
+    const { loading, $posts, $collections, deletePost, setCollections }   =   useContext(OptionsContext);
 
     const [search, setSearch]                       =   useState<string>("");
     const [filteredPosts, setFilteredPosts]         =   useState<Post[]>([]);
@@ -182,44 +181,6 @@ const OptionsLayout = () => {
         setCreateCollection(true)
     };
 
-    const openSales = () => {
-        const emailTemplateParams = {
-            from_name   :   'Buyerstage Extension',
-            subject     :   'New visit to DSR via Extension CTA',
-            slug        :   userInfo.slug,
-            url         :   userInfo.linkedInUrl,
-            cta         :   "Sales"
-        };
-        
-        emailjs.send(process.env.REACT_APP_EMAIL_JS_SERVICE_KEY!, process.env.REACT_APP_EMAIL_CTA_TEMPLATE_ID!, emailTemplateParams, {
-            publicKey: process.env.REACT_APP_EMAIL_JS_PUBLIC_KEY,
-        })
-        .then(() => {
-            console.log("Email sent")   
-        });
-
-        window.open(`https://www.buyerstage.io?ref=bs_extension&profile=${userInfo.slug}`, "_blank")
-    }
-
-    const openMarketing = () => {
-        const emailTemplateParams = {
-            from_name   :   'Buyerstage Extension',
-            subject     :   'New visit to DPR via Extension CTA',
-            slug        :   userInfo.slug,
-            url         :   userInfo.linkedInUrl,
-            cta         :   "Marketing"
-        };
-        
-        emailjs.send(process.env.REACT_APP_EMAIL_JS_SERVICE_KEY!, process.env.REACT_APP_EMAIL_CTA_TEMPLATE_ID!, emailTemplateParams, {
-            publicKey: process.env.REACT_APP_EMAIL_JS_PUBLIC_KEY,
-        })
-        .then(() => {
-            console.log("Email sent")
-        });
-
-        window.open(`https://www.buyerstage.io/product/collateral-management?ref=bs_extension&profile=${userInfo.slug}`, "_blank")
-    }
-
     return (
         <>
             <div style={{height: "100vh"}}>
@@ -237,9 +198,6 @@ const OptionsLayout = () => {
                         </Space>
                         <Space className='j-bs-post-list-header-card bs-font-size14' size={15}>
                             <IoMdPricetag size={22} color="#F06422" style={{paddingTop: "2px"}}/>
-                            <div>Check what Buyerstage offers for:</div>
-                            <Button type="primary" onClick={() => openSales()} className='bs-color-fff' style={{backgroundColor: "#000", border: "none"}}><Space>Sales<MdOpenInNew size={20} style={{paddingTop: "6px"}}/></Space></Button>
-                            <Button type="primary" onClick={() => openMarketing()} className='bs-color-fff' style={{background: "#472EC4", border: "none"}}><Space>Marketing<MdOpenInNew size={20} style={{paddingTop: "6px"}}/></Space></Button>
                         </Space>
                     </div>
                     <div className='j-bs-post-list-body'>
