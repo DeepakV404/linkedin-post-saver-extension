@@ -1,5 +1,5 @@
-export EXT_SOURCE_PATH="/Volumes/Official/Buyerstage/workspace/perpilot-ext-new"
-export EXT_OUTPUT_PATH="/Volumes/Official/Buyerstage/build/ext-output"
+export EXT_SOURCE_PATH="/Volumes/Local/dev/linkedin-post-saver-extension"
+export EXT_OUTPUT_PATH="/Volumes/Local/dev/linkedin-post-saver-extension-output"
 
 DOMAIN="$1"
 
