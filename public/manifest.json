@@ -1,5 +1,5 @@
 {
-    "name": "Buyerstage",
+    "name": "PixelPal",
     "description": "Effortlessly Organize Your Saved LinkedIn Posts",
     "version": "0.0.0.2",
     "manifest_version": 3,
@@ -9,7 +9,7 @@
         "48": "./images/48x48.png",
         "128": "./images/128x128.png"
     },
-    "homepage_url": "https://www.buyerstage.io/linkedin-saved-posts-extension",
+    
     "background": {
       "service_worker": "./background.js"
     },
