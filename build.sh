@@ -26,32 +26,6 @@ details () {
     echo "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *"
 }
 
-preBuild () {
-  echo ""
-  echo "***************************** ${IYellow} Generating build for 'https://preapp.buyerstage.io' ${NC}  *****************************"
-  echo ""
-  cd $EXT_SOURCE_PATH
-  # npm install
-  REACT_APP_DOMAIN="https://preapp.buyerstage.io" npm run build
-  echo ""
-  echo ""
-  echo "***************************** ${IYellow} Successfully generated build for 'https://preapp.buyerstage.io' ${NC}  *****************************"
-  echo ""
-}
-
-appBuild () {
-    echo ""
-	  echo "***************************** ${IYellow} Generating build for 'https://app.buyerstage.io' ${NC}  *****************************"
-    echo ""
-    cd $EXT_SOURCE_PATH
-    # npm install
-    REACT_APP_DOMAIN="https://app.buyerstage.io" npm run build
-    echo ""
-    echo ""
-    echo "***************************** ${IYellow} Successfully generated build for 'https://app.buyerstage.io' ${NC}  *****************************"
-    echo ""
-}
-
 localBuild () {
     echo ""
 	  echo "***************************** ${IYellow} Generating build for 'http://localhost:8080'${NC}  *****************************"
@@ -68,33 +42,21 @@ localBuild () {
 generateBuild () {
 
     cd $EXT_OUTPUT_PATH
-    rm -rf Buyerstage_Ext
-    rm Buyerstage.zip
+    rm -rf PixelPal_Ext
+    rm PixelPal.zip
 
     cd $EXT_SOURCE_PATH
-    mkdir Buyerstage_Ext
-    cp -r build/* Buyerstage_Ext
-    mv Buyerstage_Ext $EXT_OUTPUT_PATH
+    mkdir PixelPal_Ext
+    cp -r build/* PixelPal_Ext
+    mv PixelPal_Ext $EXT_OUTPUT_PATH
 
     cd $EXT_OUTPUT_PATH
-    zip -r Buyerstage.zip Buyerstage_Ext
+    zip -r PixelPal.zip PixelPal_Ext
     echo ""
     echo "***************************** ${IPurple} Build available now in $EXT_SOURCE_PATH  ${NC} *****************************"
     echo ""
     # open .
 }
-
-if [ ! -z "$1" ] && [ $1 == "pre" ] ; then
-    details
-    preBuild
-    generateBuild
-fi
-
-if [ ! -z "$1" ] && [ $1 == "app" ] ; then
-    details
-    appBuild
-    generateBuild
-fi
 
 if [ ! -z "$1" ] && [ $1 == "local" ] ; then
     details
