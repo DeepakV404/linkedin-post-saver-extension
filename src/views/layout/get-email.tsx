@@ -1,6 +1,5 @@
 import { Button, Form, Input, Space } from "antd";
 import { AppBroker } from "../../query/AppBroker";
-import emailjs from '@emailjs/browser';
 import { useEffect, useState } from "react";
 
 const { useForm }   =   Form;
@@ -14,6 +13,8 @@ const GetEmail = (props: { handleOnComplete: () => void }) => {
     const [userInfo, setUserInfo]       =   useState<any>({});
     const [loading, setLoading]         =   useState<boolean>(false);
 
+    console.log("userInfo: ",userInfo)
+
     useEffect(() => {
         AppBroker.getUserInfo({
             onSuccess: (data: any) => {
@@ -24,12 +25,6 @@ const GetEmail = (props: { handleOnComplete: () => void }) => {
 
     const onFinish = (values: {emailId: string}) => {
         setLoading(true)
-        const templateParams = {
-            from_name   :   'Buyerstage Extension',
-            emailId     :   values.emailId,
-            slug        :   userInfo.slug ?? "",
-            url         :   userInfo.linkedInUrl ?? "",
-        };
 
         AppBroker.setOnboardingInfo({
             onboardingInfo: {
@@ -39,33 +34,8 @@ const GetEmail = (props: { handleOnComplete: () => void }) => {
             onSuccess: () => {
                 setLoading(false)
                 handleOnComplete()
-                emailjs.send(process.env.REACT_APP_EMAIL_JS_SERVICE_KEY!, process.env.REACT_APP_EMAIL_USER_TEMPLATE_ID!, templateParams, {
-                    publicKey: process.env.REACT_APP_EMAIL_JS_PUBLIC_KEY,
-                })
-                    .then((response) => {
-                        console.log('Email sent successfully!', response);
-                    }, (error) => {
-                        console.error('Failed to send email:', error);
-                    });
             }
         })
-    }
-
-    const onSkipSendEmail = () => {
-        const templateParams = {
-            from_name   :   'Buyerstage Extension',
-            emailId     :   "",
-            slug        :   userInfo.slug ?? "",
-            url         :   userInfo.linkedInUrl ?? "",
-        };
-        
-        emailjs.send(process.env.REACT_APP_EMAIL_JS_SERVICE_KEY!, process.env.REACT_APP_EMAIL_USER_TEMPLATE_ID!, templateParams, {
-            publicKey: process.env.REACT_APP_EMAIL_JS_PUBLIC_KEY,
-        })
-        .then(() => {
-            console.log("Email sent")   
-        });
-
     }
 
     const handleSkip = () => {
@@ -75,9 +45,6 @@ const GetEmail = (props: { handleOnComplete: () => void }) => {
                 skippedEmail: true
             },
             onSuccess: () => {
-                if(userInfo){
-                    onSkipSendEmail()
-                }
                 handleOnComplete()
             }
         })
