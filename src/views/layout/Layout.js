@@ -184,21 +184,42 @@ const Layout = () => {
     const isActivityElement = (el) => {
         if(!(el && el.getAttribute)) return false;
         const dataId = el.getAttribute('data-id') || '';
-        return dataId.startsWith('urn:li:activity:') || (dataId.startsWith('urn:li:aggregate:') && dataId.includes('urn:li:activity:'));
+        const dataUrn = el.getAttribute('data-urn') || '';
+        const classMatch = (el.matches && el.matches('.feed-shared-update-v2, .occludable-update, article')) || false;
+        return (
+            dataId.startsWith('urn:li:activity:') ||
+            (dataId.startsWith('urn:li:aggregate:') && dataId.includes('urn:li:activity:')) ||
+            dataUrn.includes('urn:li:activity:') ||
+            (classMatch && (dataUrn.includes('urn:li:activity:') || dataId.includes('urn:li:activity:')))
+        );
     };
 
     const findPostElementsWithin = (root) => {
         let posts = [];
-        if(root instanceof Element && isActivityElement(root)){
+        const isElem = root instanceof Element;
+        const queryRoot = (root && typeof root.querySelectorAll === 'function') ? root : (document.body || document);
+        if(isElem && isActivityElement(root)){
             posts.push(root);
         }
-        if(root instanceof Element){
-            posts = posts.concat(Array.from(root.querySelectorAll('[data-id^="urn:li:activity:"]')));
-            const aggregates = Array.from(root.querySelectorAll('[data-id^="urn:li:aggregate:"]'))
-                .filter(el => (el.getAttribute('data-id') || '').includes('urn:li:activity:'));
-            posts = posts.concat(aggregates);
-        }
+        posts = posts.concat(Array.from(queryRoot.querySelectorAll('[data-id^="urn:li:activity:"]')));
+        const aggregates = Array.from(queryRoot.querySelectorAll('[data-id^="urn:li:aggregate:"]'))
+            .filter(el => (el.getAttribute('data-id') || '').includes('urn:li:activity:'));
+        posts = posts.concat(aggregates);
+        // Also include any element that carries data-urn with activity
+        const urnCarriers = Array.from(queryRoot.querySelectorAll('[data-urn*="urn:li:activity:"]'));
+        posts = posts.concat(urnCarriers);
+        // And common post containers that might miss attributes at first
+        posts = posts.concat(Array.from(queryRoot.querySelectorAll('.feed-shared-update-v2, .occludable-update, article[data-urn*="urn:li:activity:"]')));
         return posts;
+    };
+
+    const getPostRootFromNode = (node) => {
+        if(!(node instanceof Element)) return null;
+        if(isActivityElement(node)) return node;
+        const idAncestor = node.closest('[data-id^="urn:li:activity:"],[data-id^="urn:li:aggregate:"]');
+        if(idAncestor) return idAncestor;
+        const urnAncestor = node.closest('[data-urn*="urn:li:activity:"]');
+        return urnAncestor || null;
     };
 
     const markInjected = (container) => {
@@ -207,22 +228,62 @@ const Layout = () => {
 
     const isInjected = (container) => container.getAttribute && container.getAttribute('data-pp-injected') === '1';
 
+    const actorContainerSelectors = [
+        '.update-components-actor__container',
+        '.feed-shared-update-v2__actor',
+        '.update-components-header',
+        'header.update-components-actor'
+    ];
+
+    const selectActorContainer = (root) => {
+        for(const sel of actorContainerSelectors){
+            const el = root.querySelector(sel);
+            if(el) return el;
+        }
+        return null;
+    };
+
     const injectForPostElement = (postElement) => {
-        const dataId = postElement.getAttribute('data-id') || '';
-        const postId = (dataId.split(':').pop()) || '';
-        const actorContainer = postElement.querySelector('.update-components-actor__container');
-        if(!actorContainer) return;
-        if(isInjected(actorContainer) || actorContainer.querySelector('.j-bookmark-button')) return;
+        // Normalize to the recognized post root
+        const root = getPostRootFromNode(postElement) || postElement;
+        const dataId = root.getAttribute('data-id') || '';
+        const dataUrn = root.getAttribute('data-urn') || '';
+        let postId = '';
+        if(dataId){
+            postId = (dataId.split(':').pop()) || '';
+        }
+        if(!postId && dataUrn){
+            const m = dataUrn.match(/urn:li:activity:(\d+)/);
+            if(m) postId = m[1];
+        }
+        // Try multiple variants of the actor container across LinkedIn layouts
+        const actorContainer = selectActorContainer(root);
+        if(!actorContainer) return false;
+
+        // Cleanup: remove any stray buttons in the post root that are not inside the canonical actor container
+        const strayButtons = Array.from(root.querySelectorAll('.j-bookmark-button'));
+        strayButtons.forEach((btn) => {
+            if(!actorContainer.contains(btn)){
+                btn.remove();
+            }
+        });
+
+        if(isInjected(actorContainer) || actorContainer.querySelector('.j-bookmark-button')) {
+            // Ensure we mark as injected to prevent future attempts
+            markInjected(actorContainer);
+            return false;
+        }
 
         const button = createSavePostDiv();
         button.addEventListener('click', () => {
             setVisible(true);
             setLoading(false);
-            const initial = buildInitialValueFromElement(postElement, postId);
+            const initial = buildInitialValueFromElement(root, postId);
             setInitialValue(initial);
         });
         actorContainer.appendChild(button);
         markInjected(actorContainer);
+        return true;
     };
 
     const injectSavePostButtons = () => {
@@ -245,11 +306,16 @@ const Layout = () => {
         }
 
         // Initial sweep for feed page
-        const roots = [document];
-        roots.forEach((root) => {
-            const posts = findPostElementsWithin(root);
-            posts.forEach(injectForPostElement);
-        });
+        const posts = findPostElementsWithin(document.body || document);
+        posts.forEach(injectForPostElement);
+    };
+
+    const attemptInitialInjection = (attempts = 15, delay = 250) => {
+        let injected = 0;
+        const posts = findPostElementsWithin(document.body || document);
+        posts.forEach((p) => { if(injectForPostElement(p)) injected++; });
+        if(injected > 0 || attempts <= 0) return;
+        setTimeout(() => attemptInitialInjection(attempts - 1, delay), delay);
     };
 
     useEffect(() => {
@@ -257,8 +323,8 @@ const Layout = () => {
             return;
         }
 
-        // Initial injection
-        injectSavePostButtons();
+        // Initial injection with retries to handle slow DOM paint
+        attemptInitialInjection();
 
         if(page === POST_PAGE){
             // Post pages are static enough; no observer needed
@@ -287,17 +353,41 @@ const Layout = () => {
                 m.addedNodes && m.addedNodes.forEach((node) => {
                     if(node.nodeType === 1){
                         pending.add(node);
+                        // If the added node is the actor container, queue its closest post root
+                        if(node instanceof Element && node.matches && node.matches('.update-components-actor__container')){
+                            const root = getPostRootFromNode(node);
+                            if(root) pending.add(root);
+                        }
                     }
                 });
             }
             schedule();
         });
 
-        const feedRoot = document.querySelector('.scaffold-finite-scroll__content') || document.querySelector('.feed-outlet') || document.body;
+        const feedRoot = document.querySelector('.scaffold-finite-scroll__content') || document.querySelector('.feed-outlet') || document.querySelector('[role="main"]') || document.body;
         observer.observe(feedRoot, { childList: true, subtree: true });
+
+        // Observe body as a safety net to catch feed root replacements (e.g., "See new posts")
+        const globalObserver = new MutationObserver((mutations) => {
+            let rootChanged = false;
+            for(const m of mutations){
+                m.addedNodes && m.addedNodes.forEach((node) => {
+                    if(node.nodeType === 1){
+                        // If a new feed container appears, queue it
+                        if(node instanceof Element && (node.matches('.scaffold-finite-scroll__content, .feed-outlet, [role="main"]') || node.hasAttribute('data-urn'))){
+                            pending.add(node);
+                            rootChanged = true;
+                        }
+                    }
+                });
+            }
+            if(rootChanged) schedule();
+        });
+        globalObserver.observe(document.body, { childList: true, subtree: true });
 
         return () => {
             observer.disconnect();
+            globalObserver.disconnect();
             if(timer){
                 clearTimeout(timer);
                 timer = null;

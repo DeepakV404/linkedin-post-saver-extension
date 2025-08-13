@@ -12,6 +12,10 @@ export interface Post{
     userInfo?   :   {
         userName?   :   string,
         userAvatar? :   string
+     },
+    user?       :   {
+        name?       :   string,
+        avatar?     :   string
     }
 }
 

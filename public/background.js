@@ -207,6 +207,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     collection      :   newPost.collection,
                     postPerformance :   newPost.postPerformance,
                     postBy          :   newPost.postBy,
+                    user            :   {
+                        name        :   newPost.userName,
+                        avatar      :   newPost.userAvatar
+                    },
                     userInfo        :   {
                         userName    :   newPost.userName,
                         userAvatar  :   newPost.userAvatar

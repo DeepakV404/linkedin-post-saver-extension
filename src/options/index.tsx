@@ -79,6 +79,14 @@ const OptionsLayout = () => {
                 </div>
             )
         },
+        "_user": (record: Post) => {
+            return (
+                <Space className='bs-flex-align-center'>
+                    {record?.user?.avatar ? <img alt='Avatar' src={record.user.avatar} style={{width: 24, height: 24, borderRadius: '50%'}}/> : null}
+                    <span>{record?.user?.name || record?.userInfo?.userName || 'Unknown'}</span>
+                </Space>
+            )
+        },
         "_notes": (record: Post) => {
             return(
                 <Paragraph ellipsis={{rows: 3}} className='bs-margin-0 bs-black-87 bs-font-size13'>{record?.note ? record?.note : "-"}</Paragraph>
@@ -138,6 +146,12 @@ const OptionsLayout = () => {
             render      :   renderers._postDetails,
             width       :   '300px',
             fixed       :   "left"
+        },
+        {
+            title       :   <div className='bs-font-fam500'>User</div>,
+            key         :   'user',
+            render      :   renderers._user,
+            width       :   '200px',
         },
         {
             title       :    <div className='bs-font-fam500'>Notes</div>,
