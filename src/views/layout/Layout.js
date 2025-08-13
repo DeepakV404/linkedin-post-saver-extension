@@ -140,21 +140,44 @@ const Layout = () => {
         return container;
     }
 
-    const getPostUrl = (postId) => {
-        setVisible(true)
-        setLoading(true)
-        DataScrapper.getPostURL(postId)
-            .then((postUrl) => {
-                $helper.getPostData(postUrl)
-                    .then(postData => {
-                        setLoading(false)
-                        setInitialValue(postData)
-                    })
-                    .catch(error => {
-                        console.error('Error fetching post data:', error);
-                    })
-            });
-    }
+    const buildInitialValueFromCurrentPage = () => {
+        const meta = DataScrapper.getPostMeta();
+        return {
+            userInfo: {
+                userName: meta.userName,
+                userAvatar: meta.userAvatar,
+            },
+            postMeta: {
+                postId: {
+                    uniqueId: meta.postId,
+                    postUniqueId: meta.postId,
+                },
+                postContent: meta.content,
+                postThumbnailUrl: meta.imageUrl,
+                postUrl: meta.url,
+            },
+        };
+    };
+
+    const buildInitialValueFromElement = (element, postId) => {
+        const meta = DataScrapper.getPostMetaFromElement(element);
+        return {
+            userInfo: {
+                userName: meta.userName,
+                userAvatar: meta.userAvatar,
+            },
+            postMeta: {
+                postId: {
+                    uniqueId: postId,
+                    postUniqueId: postId,
+                },
+                postContent: meta.content,
+                postThumbnailUrl: meta.imageUrl,
+                // We cannot reliably build a canonical post URL without extra requests; use current page
+                postUrl: window.location.href,
+            },
+        };
+    };
     
     const injectSavePostButtons = () => {
 
@@ -166,15 +189,9 @@ const Layout = () => {
                     let button = createSavePostDiv()
                     button.addEventListener('click', () => {
                         setVisible(true)
-                        setLoading(true)
-                        $helper.getPostData(window.location.href)
-                            .then(postData => {
-                                setLoading(false)
-                                setInitialValue(postData)
-                            })
-                            .catch(error => {
-                                console.error('Error fetching post data:', error);
-                            })
+                        setLoading(false)
+                        const initial = buildInitialValueFromCurrentPage();
+                        setInitialValue(initial)
                     });
                     post.appendChild(button);
                 }
@@ -198,7 +215,10 @@ const Layout = () => {
                     if (!actorContainer.querySelector('.j-bookmark-button')) {
                         let button = createSavePostDiv()
                         button.addEventListener('click', () => {
-                            getPostUrl(postId)
+                            setVisible(true)
+                            setLoading(false)
+                            const initial = buildInitialValueFromElement(postElement, postId)
+                            setInitialValue(initial)
                         });
                         actorContainer.appendChild(button);
                     }
@@ -302,15 +322,9 @@ const Layout = () => {
     const handleOpenSlider = () => {
         if(page === POST_PAGE){
             setVisible(true)
-            setLoading(true)
-            $helper.getPostData(window.location.href)
-                .then(postData => {
-                    setLoading(false)
-                    setInitialValue(postData)
-                })
-                .catch(error => {
-                    console.error('Error fetching post data:', error);
-                })
+            setLoading(false)
+            const initial = buildInitialValueFromCurrentPage();
+            setInitialValue(initial)
         }else{
             setShowNoPost(true)
             setVisible(true)

@@ -165,6 +165,34 @@ DataScrapper.getPostMetaFromIframe = ($content, postId, postUrl) => {
     return data;
 };
 
+DataScrapper.getPostMetaFromElement = (element) => {
+    const $content = $(element);
+
+    let data = {};
+
+    data["userName"]   =   $content.find(".update-components-actor__title span span").find('span[aria-hidden="true"]').first().text().trim() || "Anonymous";
+    data["userAvatar"] =   $content.find(".update-components-actor__avatar-image").attr('src') || null;
+
+    if ($content.find(".update-components-image--single-image").length) {
+        data["imageUrl"] = $content.find(".update-components-image__image").attr('src') || null;
+    } else if ($content.find(".update-components-image__image-link").length){
+        data["imageUrl"] = $content.find(".ivm-view-attr__img--centered").first().attr('src') || null;
+    } else if ($content.find(".update-components-linkedin-video__container").length){
+        if($content.find(".vjs-poster-background").length){
+            data["imageUrl"] = $content.find("video").attr("poster") || null;
+        }
+    }
+
+    if ($content.find('.update-components-text').length) {
+        const parser        =   new DOMParser();
+        const doc           =   parser.parseFromString($content.find('.update-components-text').text(), 'text/html');
+        const textContent   =   doc.body.textContent.trim();
+        data["content"]     =   textContent || null;
+    }
+
+    return data;
+}
+
 DataScrapper.getchPostData = (postId, postUrl) => {
 
     return new Promise((resolve, reject) => {

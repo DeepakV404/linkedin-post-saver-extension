@@ -34,18 +34,11 @@ const OptionsContainer = () => {
 
 
     useEffect(() => {
-        AppBroker.executeApi({
-            query: "posts",
-            request: {
-                method      :   'GET',
-                headers     :   {'Content-Type': 'application/json'}
-            },
+        // No external API; rely only on chrome.storage
+        AppBroker.getPosts({
             onSuccess: (data: any) => {
-                console.log("data: in listing",data)
-                setPosts(transformPosts(data))
-            },
-            onFailure: () => {
-
+                const postsArray: any = getPostsArray(data)
+                setPosts(postsArray)
             }
         })
     }, [])
@@ -53,21 +46,6 @@ const OptionsContainer = () => {
 
     useEffect(() => {
         setLoading(true)
-
-        AppBroker.executeApi({
-            query: "posts",
-            request: {
-                method      :   'GET',
-                headers     :   {'Content-Type': 'application/json'}
-            },
-            onSuccess: (data: any) => {
-                console.log("data: in ",data)
-                setLoading(false)
-            },
-            onFailure: () => {
-
-            }
-        })
 
         AppBroker.getPosts({
             onSuccess: (data: any) => {

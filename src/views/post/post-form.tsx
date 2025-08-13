@@ -72,71 +72,31 @@ const PostForm = (props: {loading: boolean, initialValue: any, handleClose: () =
             }
         })
 
-
-        AppBroker.executeApi({
-            query: "tags",
-            request: {
-                method      :   'GET',
-                headers     :   {'Content-Type': 'application/json'}
-            },
-            onSuccess: (data: any) => {
-                console.log("data: in ",data)
-                setTags((prevTags): any => [...prevTags, ...data])
-            },
-            onFailure: () => {
-
-            }
-        })
-
     }, [])
 
     const onFinish = (values: any) => {
         setSaveState(true)
 
-        AppBroker.executeApi({
-            query: "posts",
-            request: {
-                body        :  {
-                    "postUrl"       :   postData?.postMeta.postUrl,
-                    "note"          :   values.notes,
-                    "contentUrl"    :   postData?.postMeta.postThumbnailUrl,
-                    "tags"          :   values.tags,
-                    "content"       :   postData?.postMeta.postContent,
-                    "userName"      :   postData?.userInfo.userName,
-                    "userAvatar"    :   postData?.userInfo.userAvatar
-                },
-                method      :   'POST',
-                headers     :   {'Content-Type': 'application/json'}
+        AppBroker.createPost({
+            post: {
+                id              :   postData?.postMeta.postId.uniqueId || postData?.postMeta.postId.postUniqueId,
+                imageUrl        :   postData?.postMeta.postThumbnailUrl,
+                content         :   postData?.postMeta.postContent,
+                url             :   postData?.postMeta.postUrl,
+                tags            :   values.tags,
+                note            :   values.notes,
+                collection      :   values.collection,
+                userName        :   postData?.userInfo.userName,
+                userAvatar      :   postData?.userInfo.userAvatar,
             },
-            onSuccess: (data: any) => {
-                console.log("data: in Form",data)
-                handleClose()
-            },
-            onFailure: () => {
-
+            onSuccess: () => {
+                setSaveState("saved")
+                setTimeout(() => {
+                    setSaveState(false)
+                    handleClose()
+                }, 1000)
             }
         })
-        // AppBroker.createPost({
-        //     post: {
-        //         id              :   postData?.postMeta.postId.uniqueId,
-        //         postId          :   postData?.postMeta.postId.postUniqueId,
-        //         imageUrl        :   postData?.postMeta.postThumbnailUrl,
-        //         content         :   postData?.postMeta.postContent,
-        //         url             :   postData?.postMeta.postUrl,
-        //         tags            :   values.tags,
-        //         note            :   values.notes,
-        //         collection      :   values.collection,
-        //         userName        :   postData?.userInfo.userName,
-        //         userAvatar      :   postData?.userInfo.userAvatar,
-        //     },
-        //     onSuccess: () => {
-        //         setSaveState("saved")
-        //         setTimeout(() => {
-        //             setSaveState(false)
-        //             handleClose()
-        //         }, 2000)
-        //     }
-        // })
     }
 
     const openSales = () => {
