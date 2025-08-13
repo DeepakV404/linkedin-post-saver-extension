@@ -193,6 +193,63 @@ DataScrapper.getPostMetaFromElement = (element) => {
     return data;
 }
 
+// New: extract a stable permalink without opening dropdowns
+DataScrapper.getPermalinkFromElement = (element) => {
+    try{
+        const $el = $(element);
+
+        // 1) Direct anchor inside post card (timestamp/permalink)
+        const aHref = $el.find('a[href*="/feed/update/urn:li:activity:"]').attr('href');
+        if(aHref){
+            return aHref.startsWith('http') ? aHref : `https://www.linkedin.com${aHref}`;
+        }
+
+        // 2) Construct from activity URN on container
+        const dataId = element?.getAttribute('data-id') || '';
+        const urnMatch = dataId.match(/urn:li:activity:\d+/);
+        if(urnMatch){
+            return `https://www.linkedin.com/feed/update/${urnMatch[0]}/`;
+        }
+
+        // 3) Page-level OpenGraph URL
+        const ogMeta = document.querySelector('meta[property="og:url"]');
+        const ogUrl = ogMeta && ogMeta.getAttribute('content');
+        if(ogUrl){
+            return ogUrl;
+        }
+
+        // 4) Fallback
+        return window.location.href;
+    }catch(err){
+        return window.location.href;
+    }
+}
+
+// New: permalink for the current page (post pages or feed)
+DataScrapper.getPermalinkForCurrentPage = () => {
+    try{
+        const a = document.querySelector('a[href*="/feed/update/urn:li:activity:"]');
+        if(a && a.href){
+            return a.href;
+        }
+
+        const og = document.querySelector('meta[property="og:url"]');
+        const ogUrl = og && og.getAttribute('content');
+        if(ogUrl){
+            return ogUrl;
+        }
+
+        const m = window.location.pathname.match(/urn:li:activity:\d+/);
+        if(m){
+            return `https://www.linkedin.com/feed/update/${m[0]}/`;
+        }
+
+        return window.location.href;
+    }catch(err){
+        return window.location.href;
+    }
+}
+
 DataScrapper.getchPostData = (postId, postUrl) => {
 
     return new Promise((resolve, reject) => {

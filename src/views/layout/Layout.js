@@ -142,6 +142,7 @@ const Layout = () => {
 
     const buildInitialValueFromCurrentPage = () => {
         const meta = DataScrapper.getPostMeta();
+        const permalink = DataScrapper.getPermalinkForCurrentPage();
         return {
             userInfo: {
                 userName: meta.userName,
@@ -154,13 +155,14 @@ const Layout = () => {
                 },
                 postContent: meta.content,
                 postThumbnailUrl: meta.imageUrl,
-                postUrl: meta.url,
+                postUrl: permalink,
             },
         };
     };
 
     const buildInitialValueFromElement = (element, postId) => {
         const meta = DataScrapper.getPostMetaFromElement(element);
+        const permalink = DataScrapper.getPermalinkFromElement(element);
         return {
             userInfo: {
                 userName: meta.userName,
@@ -173,8 +175,7 @@ const Layout = () => {
                 },
                 postContent: meta.content,
                 postThumbnailUrl: meta.imageUrl,
-                // We cannot reliably build a canonical post URL without extra requests; use current page
-                postUrl: window.location.href,
+                postUrl: permalink,
             },
         };
     };
