@@ -180,70 +180,130 @@ const Layout = () => {
         };
     };
     
-    const injectSavePostButtons = () => {
+    // Helpers for feed detection and injection
+    const isActivityElement = (el) => {
+        if(!(el && el.getAttribute)) return false;
+        const dataId = el.getAttribute('data-id') || '';
+        return dataId.startsWith('urn:li:activity:') || (dataId.startsWith('urn:li:aggregate:') && dataId.includes('urn:li:activity:'));
+    };
 
-        if(page === POST_PAGE){
-            const posts =   document.querySelectorAll('.update-components-actor__container');
-    
-            posts.forEach((post) => {
-                if (!post.querySelector('.j-bookmark-button')) {
-                    let button = createSavePostDiv()
-                    button.addEventListener('click', () => {
-                        setVisible(true)
-                        setLoading(false)
-                        const initial = buildInitialValueFromCurrentPage();
-                        setInitialValue(initial)
-                    });
-                    post.appendChild(button);
-                }
-            });
-        }else {
-                
-            const posts = Array.from(document.querySelectorAll('[data-id^="urn:li:activity:"]'));
-
-            const aggregatePosts = Array.from(document.querySelectorAll('[data-id^="urn:li:aggregate:"]'))
-                                        .filter(el => el.getAttribute('data-id').includes('urn:li:activity:'));
-
-            const allPosts = [...posts, ...aggregatePosts];
-
-            allPosts.forEach((postElement) => {
-                const dataId = postElement.getAttribute('data-id');
-                const postId = dataId.split(':').pop();
-
-                const actorContainer = postElement.querySelector('.update-components-actor__container');
-
-                if (actorContainer) {
-                    if (!actorContainer.querySelector('.j-bookmark-button')) {
-                        let button = createSavePostDiv()
-                        button.addEventListener('click', () => {
-                            setVisible(true)
-                            setLoading(false)
-                            const initial = buildInitialValueFromElement(postElement, postId)
-                            setInitialValue(initial)
-                        });
-                        actorContainer.appendChild(button);
-                    }
-                } 
-            });
+    const findPostElementsWithin = (root) => {
+        let posts = [];
+        if(root instanceof Element && isActivityElement(root)){
+            posts.push(root);
         }
-    }
+        if(root instanceof Element){
+            posts = posts.concat(Array.from(root.querySelectorAll('[data-id^="urn:li:activity:"]')));
+            const aggregates = Array.from(root.querySelectorAll('[data-id^="urn:li:aggregate:"]'))
+                .filter(el => (el.getAttribute('data-id') || '').includes('urn:li:activity:'));
+            posts = posts.concat(aggregates);
+        }
+        return posts;
+    };
+
+    const markInjected = (container) => {
+        container.setAttribute('data-pp-injected', '1');
+    };
+
+    const isInjected = (container) => container.getAttribute && container.getAttribute('data-pp-injected') === '1';
+
+    const injectForPostElement = (postElement) => {
+        const dataId = postElement.getAttribute('data-id') || '';
+        const postId = (dataId.split(':').pop()) || '';
+        const actorContainer = postElement.querySelector('.update-components-actor__container');
+        if(!actorContainer) return;
+        if(isInjected(actorContainer) || actorContainer.querySelector('.j-bookmark-button')) return;
+
+        const button = createSavePostDiv();
+        button.addEventListener('click', () => {
+            setVisible(true);
+            setLoading(false);
+            const initial = buildInitialValueFromElement(postElement, postId);
+            setInitialValue(initial);
+        });
+        actorContainer.appendChild(button);
+        markInjected(actorContainer);
+    };
+
+    const injectSavePostButtons = () => {
+        if(page === POST_PAGE){
+            // Inject once on post page
+            const actorContainers = document.querySelectorAll('.update-components-actor__container');
+            actorContainers.forEach((container) => {
+                if(isInjected(container) || container.querySelector('.j-bookmark-button')) return;
+                const button = createSavePostDiv();
+                button.addEventListener('click', () => {
+                    setVisible(true);
+                    setLoading(false);
+                    const initial = buildInitialValueFromCurrentPage();
+                    setInitialValue(initial);
+                });
+                container.appendChild(button);
+                markInjected(container);
+            });
+            return;
+        }
+
+        // Initial sweep for feed page
+        const roots = [document];
+        roots.forEach((root) => {
+            const posts = findPostElementsWithin(root);
+            posts.forEach(injectForPostElement);
+        });
+    };
 
     useEffect(() => {
-        if(page !== OPTIONS_PAGE){
-
-            injectSavePostButtons();
-
-            const observer = new MutationObserver(() => {
-                injectSavePostButtons();
-            });
-
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true,
-            });
-
-            return () => observer.disconnect();
+        if(page === OPTIONS_PAGE){
+            return;
         }
+
+        // Initial injection
+        injectSavePostButtons();
+
+        if(page === POST_PAGE){
+            // Post pages are static enough; no observer needed
+            return;
+        }
+
+        // Feed pages: observe and process only added nodes, debounced
+        let pending = new Set();
+        let timer = null;
+
+        const schedule = () => {
+            if(timer) return;
+            timer = setTimeout(() => {
+                const toProcess = Array.from(pending);
+                pending.clear();
+                timer = null;
+                toProcess.forEach((node) => {
+                    const posts = findPostElementsWithin(node);
+                    posts.forEach(injectForPostElement);
+                });
+            }, 120);
+        };
+
+        const observer = new MutationObserver((mutations) => {
+            for(const m of mutations){
+                m.addedNodes && m.addedNodes.forEach((node) => {
+                    if(node.nodeType === 1){
+                        pending.add(node);
+                    }
+                });
+            }
+            schedule();
+        });
+
+        const feedRoot = document.querySelector('.scaffold-finite-scroll__content') || document.querySelector('.feed-outlet') || document.body;
+        observer.observe(feedRoot, { childList: true, subtree: true });
+
+        return () => {
+            observer.disconnect();
+            if(timer){
+                clearTimeout(timer);
+                timer = null;
+            }
+            pending.clear();
+        };
 
     }, [page]);
 
