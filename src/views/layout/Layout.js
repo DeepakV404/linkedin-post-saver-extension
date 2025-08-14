@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Avatar, Button, Drawer, Space, Tooltip } from "antd";
-import { MdClose, MdOutlineMenu } from "react-icons/md";
+import { MdClose, MdOpenInBrowser, MdOutlineMenu } from "react-icons/md";
 import { createRoot } from 'react-dom/client';
 
 
@@ -451,7 +451,6 @@ const Layout = () => {
             return (
                 <div className="bs-height100">
                         <div className="j-post-drawer-header">
-                            <img alt="Logo" className="j-logo" src="https://static.buyerstage.io/static-assets/buyerstage-logo.svg" />
                             <Space size={15}>
                                 {
                                     !showNoPost &&
@@ -505,7 +504,7 @@ const Layout = () => {
                             <GetEmail handleOnComplete={() => setIsOnboarded(true)}/>
                     }
                 </Drawer>
-                { !visible && <Avatar sty shape='circle' onClick={() => handleOpenSlider()} size={50} className="j-avatar-logo" src= "https://static.buyerstage.io/static-assets/buyerstage-product-logo.svg" />}
+                { !visible && <Avatar sty shape='circle' onClick={() => handleOpenSlider()} size={50} className="j-avatar-logo" ><MdOpenInBrowser/></Avatar>}
             </div>
         )
     }
