@@ -53,8 +53,6 @@ const GetEmail = (props: { handleOnComplete: () => void }) => {
     return (
         <div className="bs-height100">
             <Space className="j-bs-drawer-email-top bs-width100 bs-flex-center" direction="vertical" size={30}>
-                <img alt="Buyerstage" src="https://static.buyerstage.io/static-assets/buyerstage-logo.svg" style={{width: "160px"}}/>
-                <img alt="Save and Organize" src="https://static.buyerstage.io/bs_extension/bs_e_image1.svg"/>
                 <div style={{width: "300px"}} className="bs-font-size20 bs-font-fam500 bs-text-center">Save & organize your favorite posts in two click</div>
             </Space>
             <Space className="j-bs-drawer-email-bottom bs-width100 bs-flex-center" direction="vertical" size={20}>
